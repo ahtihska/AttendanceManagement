@@ -1,0 +1,44 @@
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.App-header {
+  background: #6c88c8;
+  font-size: 16px;
+  color: white;
+  display: flex;
+}
+.App-header img {
+  max-height: 70px;
+}
+.App-footer {
+  background-color: #6c88c8;
+  font-size: 16px;
+  bottom: 0;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  padding: 25px;
+}
+.App-footer a {
+  color: white !important;
+  text-decoration: none !important;
+  text-transform: uppercase;
+  margin-right: 30px;
+  font-size: 16px;
+}
+#side-navigation {
+  position: absolute;
+  right: 0;
+  top: 15px;
+  color: #fff;
+}
+.App-Card {
+  box-shadow: none !important;
+  text-align: center;
+}
+.App-Card a {
+  margin-right: 20px;
+  text-decoration: none !important;
+}
