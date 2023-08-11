@@ -6,9 +6,15 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
+import { Button, Box, Grid } from '@mui/material'
+import Tooltip from '@material-ui/core/Tooltip';
 import { PieChart } from '@mui/x-charts';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { CSVLink, CSVDownload } from "react-csv";
+import csvicon from "../../../images/csvdownloader.png";
+
+import IconButton from '@material-ui/core/IconButton';
 
 const baseUrl = 'http://localhost:8080/api/v1/attendance';
 
@@ -25,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
   },
   tileHeadings: {
       fontSize: 20,
-
+      fontFamily: 'Poppins',
       fontWeight: 700,
       color: 'black',
       padding: '10px',
@@ -35,12 +41,12 @@ const useStyles = makeStyles((theme) => ({
       paddingTop: '15px',
   },
   sideTileHeadings: {
-
+      fontFamily: 'Poppins',
       opacity:0.7,
       color: 'black',
   },
   cornerBox: {
-
+      fontFamily: 'Poppins',
       fontSize: 16,
       fontWeight: 700,
       marginLeft: theme.spacing(100),
@@ -48,32 +54,41 @@ const useStyles = makeStyles((theme) => ({
       marginRight: '20px',
   },
   name: {
-
+      fontFamily: 'Poppins',
       fontWeight: 400,
       color: 'black',
       fontSize : 15,
   },
   attendance: {
-
+      fontFamily: 'Poppins',
       fontWeight: 550,
       color: 'black',
       fontSize: 15,
       opacity: 0.8,
   },
   noOfDays: {
-
+      fontFamily: 'Poppins',
       fontWeight: 550,
       color: 'black',
       fontSize: 15,
       opacity: 0.8,
   },
   days: {
-
+      fontFamily: 'Poppins',
       fontWeight: 700,
       color: '#CDCDCD',
       fontSize : 12,
       opacity:0.7,
   },
+  align: {
+        fontFamily: 'Poppins',
+        fontWeight: 700,
+        color: '#CDCDCD',
+        fontSize : 12,
+        opacity:0.7,
+    },
+
+
 }));
 const formatDate = (date) => {
    const year = date.getFullYear();
@@ -81,9 +96,13 @@ const formatDate = (date) => {
    const day = String(date.getDate()).padStart(2, '0');
    return `${year}-${month}-${day}`;
 };
+
    const AttendanceReport = ({ type, startDate, endDate, classId }) => {
       const [attendanceData, setAttendanceData] = useState([]);
       const [totalDays, setTotalDays] = useState(0);
+
+
+
 
       const fetchData = (startDate, endDate, classId) => {
         if (!classId || !startDate || !endDate) {
@@ -91,9 +110,10 @@ const formatDate = (date) => {
           return;
         }
 
-        const apiUrl = `${baseUrl}/studentsbyclass?classId=${classId}&startdate=${formatDate(
+        const apiUrl = `${baseUrl}/class?classId=${classId}&startdate=${formatDate(
           startDate
         )}&enddate=${formatDate(endDate)}`;
+
 
         axios
           .get(apiUrl)
@@ -117,15 +137,24 @@ const formatDate = (date) => {
         if (!studentAttendance[student_id]) {
           studentAttendance[student_id] = {
             name: `Student ${student_id}`,
+            Class : new String(),
             totalDays: 0,
-            totalPresentDays: 0,
+            totalPresentDays: 0
+
+
           };
         }
+
+
+
+
         studentAttendance[student_id].totalDays++;
+        studentAttendance[student_id].Class = classId;
         if (present) {
           studentAttendance[student_id].totalPresentDays++;
         }
       });
+
 
       Object.values(studentAttendance).forEach((student) => {
           student.attendancePercentage = (student.totalPresentDays / student.totalDays) * 100;
@@ -139,8 +168,9 @@ const formatDate = (date) => {
         return uniqueDates.size;
     };
 
-    const MainAttendanceTable = ({ studentAttendanceData, totalDays }) => { const classes = useStyles();
+    const MainAttendanceTable = ({ studentAttendanceData, totalDays}) => { const classes = useStyles();
   return (
+    <div>
       <div >
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="h6" className={classes.tileHeadings} component="h2">Attendance Report</Typography>
@@ -160,34 +190,27 @@ const formatDate = (date) => {
             </TableBody>
           </Table>
         </TableContainer>
+
+      </div>
+
       </div>
     );
   };
-  const LowAttendanceTable = ({ studentsWithLowAttendance, totalDays }) => {
+  const CSVReport = ({ studentAttendanceData, totalDays}) => {
     const classes = useStyles();
+    const startDateString = startDate.toString();
+    const startformatter = startDateString.substring(4,15)
+    const endDateString = endDate.toString();
+    const endformatter = endDateString.substring(4, 15);
 
-    return (
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" className={classes.tileHeadings} component="h2">Students with Low Attendance</Typography>
-            <Typography className={classes.sideTileHeadings} style={{ marginLeft: '900px' }}>TOTAL DAYS: <b>{totalDays}</b></Typography>
-        </div>
-        <TableContainer className={classes.tableContainer}>
-          <Table>
-            <TableBody>
-              {studentsWithLowAttendance.map((student) => (
-                <TableRow key={student.name}>
-                  <TableCell><Typography className={classes.name}>{student.name}</Typography></TableCell>
-                  <TableCell><Typography className={classes.attendance}>{student.attendancePercentage.toFixed(2)}%</Typography></TableCell>
-                  <TableCell><Typography className={classes.noOfDays}>{student.totalPresentDays}</Typography></TableCell>
-                  <TableCell><Typography className={classes.days}>DAYS</Typography></TableCell>
 
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+    return (<div style={{ display: 'flex', justifyContent: 'flex-end',marginRight : '500px', marginLeft : '750px'}}>
+    <CSVLink data={studentAttendanceData} title = "Download CSV Report" filename={`AttendanceReport_${startformatter}-${endformatter}.csv`}>
+                  {studentAttendanceData.length > 0 && <IconButton>
+                                                                     <img src={csvicon} alt="Download CSV Report" />
+                                                                   </IconButton>}
+                  </CSVLink>
+    </div>
     );
   };
 
@@ -228,16 +251,23 @@ const formatDate = (date) => {
 
 
   const studentAttendanceData = calculateStudentAttendance(attendanceData);
+
+
   const studentsWithLowAttendance = studentAttendanceData.filter(
     (student) => student.attendancePercentage < 75
   );
     return (
       <React.Fragment>
-        {type === 'main' && <MainAttendanceTable studentAttendanceData={studentAttendanceData} totalDays={totalDays} classId={classId}/>}
-        {type === 'low' && <LowAttendanceTable studentsWithLowAttendance={studentsWithLowAttendance} totalDays={totalDays} classId={classId}/>}
+        {type === 'main' && <MainAttendanceTable studentAttendanceData={studentAttendanceData} totalDays={totalDays}  classId={classId}/>}
+        {type === 'csv' && <CSVReport studentAttendanceData={studentAttendanceData} totalDays={totalDays} />}
+
         {type === 'pie' && (<PieChartSection studentAttendanceData={studentAttendanceData} studentsWithLowAttendance={studentsWithLowAttendance} classId={classId}/>)}
+
       </React.Fragment>
+
     );
+    console.log(studentAttendanceData);
   };
 
-export default AttendanceReport;
+
+export default AttendanceReport
