@@ -1,6 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AttendanceReport from "./AttendanceReport.jsx";
+
+
 import DateRangePickerFunc from "./DateRangePickerFunc.jsx";
 import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -11,6 +13,10 @@ import Select from '@mui/material/Select';
 import axios from 'axios';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { CSVLink, CSVDownload } from "react-csv";
+import { Button,Grid } from '@mui/material';
+
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -75,7 +81,7 @@ const useStyles = makeStyles((theme) => ({
      display: 'flex',
          flexDirection: 'column',
          alignItems: 'left',
-
+         fontFamily: 'Poppins',
          fontSize: 11,
          color: 'black',
          overflow: 'hidden',
@@ -94,7 +100,7 @@ const useStyles = makeStyles((theme) => ({
      display: 'flex',
          flexDirection: 'column',
          alignItems: 'left',
-
+         fontFamily: 'Poppins',
          fontSize: 11,
          color: 'black',
          overflow: 'auto',
@@ -178,6 +184,8 @@ const Report = () => {
      }
   }, [snackbarMessage]);
 
+
+
   return (
     <div className={classes.root}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -185,7 +193,7 @@ const Report = () => {
                     <DateRangePickerFunc onGetData={fetchData} classId={section} startDateProp={startDate} endDateProp={endDate}
                                             setStartDate={setStartDate} setEndDate={setEndDate} handleDateChange={handleDateChange} />
                 </Box>
-            <Box sx={{ width:'50%', flex: '1', marginLeft: '900px', marginRight: '100px'}} className={classes.boxContainer}>
+            <Box sx={{ width:'50%', flex: '1', marginLeft: '600px', marginRight: '100px'}} className={classes.boxContainer}>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel className={classes.name}>Class</InputLabel>
                   <Select
@@ -203,25 +211,28 @@ const Report = () => {
                 </FormControl>
             </Box>
         </div>
+
         <div className={classes.bodyContainer}>
             <div className={classes.bigBox}>
                 <div className={classes.notificationContainer}>
                      <AttendanceReport type="main" startDate={startDate} endDate={endDate} classId={section}/>
                 </div>
             </div>
+
             <div className={classes.regularBox}>
                 <div className={classes.chartContainer}>
                     <AttendanceReport type="pie" startDate={startDate} endDate={endDate} classId={section}/>
+
                 </div>
             </div>
+
         </div>
         <div className={classes.bodyContainer}>
-            <div className={classes.biggestBox}>
-                <div className={classes.absenteesContainer}>
-                     <AttendanceReport type="low" startDate={startDate} endDate={endDate} classId={section}/>
-                </div>
-            </div>
+        <AttendanceReport type="csv" startDate={startDate} endDate={endDate} classId={section} startDateProp={startDate} />
+
         </div>
+
+
         <Snackbar open={snackbarMessage !== ''} autoHideDuration={4000} onClose={() => setSnackbarMessage('')}>
                 <MuiAlert elevation={6} variant="filled" onClose={() => setSnackbarMessage('')} severity="error">
                   {snackbarMessage}

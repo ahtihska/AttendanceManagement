@@ -23,6 +23,10 @@ import { addDays } from 'date-fns';
 import totalPic from '../../../images/total.png';
 import absent from '../../../images/absent.png';
 import present from '../../../images/present.png';
+import { CSVLink, CSVDownload } from "react-csv";
+import csvicon from "../../../images/csvdownloader.png";
+
+import IconButton from '@material-ui/core/IconButton';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -32,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
   },
   message: {
     fontSize: 13,
-
+    fontFamily: 'Poppins',
     fontWeight: 'light',
   },
   bodyContainer: {
@@ -120,12 +124,12 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
   },
   boldContent: {
-
+    fontFamily: 'Poppins',
     fontWeight: 'Bold',
     color: 'black',
   },
   fadedContent: {
-
+    fontFamily: 'Poppins',
     opacity: 0.5,
     color: 'black',
   },
@@ -138,7 +142,7 @@ const useStyles = makeStyles((theme) => ({
   },
   tileHeadings: {
     fontSize: 20,
-
+    fontFamily: 'Poppins',
     fontWeight: 700,
     position: 'absolute',
     color: 'black',
@@ -148,7 +152,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'left',
-
+    fontFamily: 'Poppins',
     fontSize: 11,
     color: 'black',
     overflow: 'hidden',
@@ -178,14 +182,14 @@ const DateRangePicker = ({ onDateChange }) => {
     color: 'black',
     backgroundColor: '#fff',
     fontSize: 13,
-
+    fontFamily: 'Poppins',
     height: '27px',
   };
 
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <span style={{ marginRight: '10px', marginLeft: '10px', fontSize: 18, color: '#4150B7' }}>DATE : </span>
+        <span style={{ marginRight: '10px', marginLeft: '10px', fontSize: 18, fontFamily: 'Poppins', color: '#4150B7' }}>DATE : </span>
         <DatePicker
           selected={startDate}
           onChange={handleStartDateChange}
@@ -220,12 +224,15 @@ const Report = () => {
   const [teacherName, setTeacherName] = useState('');
   const [classID, setClassID] = useState('');
   const [attendancePercentage, setAttendancePercentage] = useState(0);
+  const [attendanceData, setAttendanceData] = useState([]);
   const [presentCount, setPresentCount] = useState(0);
   const [absentCount, setAbsentCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [absentDates, setAbsentDates] = useState([]); // State to store dates where present is false
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [csvstartDate, setCSVStartDate] = useState('');
+  const [csvendDate, setCsvEndDate] = useState('');
   const [isInitialRender, setIsInitialRender] = useState(true); // Track initial render
 
   useEffect(() => {
@@ -253,17 +260,30 @@ const Report = () => {
       });
   }, []);
 
+
   useEffect(() => {
     if (!isInitialRender && startDate && endDate) {
       // Convert startDate and endDate to ISO date strings
       const formattedStartDate = startDate.toISOString().split('T')[0];
-        const formattedEndDate = addDays(endDate, 1).toISOString().split('T')[0]; // Add one day to endDate
+      const formattedEndDate = addDays(endDate, 1).toISOString().split('T')[0];
+      setCSVStartDate(formattedStartDate.toString());
+      setCsvEndDate(formattedEndDate.toString());// Add one day to endDate
 
       axios
         .get(`http://localhost:8080/api/v1/attendance/students?studentId=1&startdate=${formattedStartDate}&enddate=${formattedEndDate}`)
         .then((response) => {
           if (response.data !== null) {
-            const attendanceData = response.data;
+            const attendanceData = response.data.map((item) => {
+                    // Create a new object without the "teacher_id" key
+                    const { id,teacher_id,delegation_id,leave_id,leave,...rest } = item;
+                    return rest;
+                  });
+            const rearrangedAttendanceData = attendanceData.map((item) => {
+              const { age, name, id, ...rest } = item;
+              return { age, name, id, ...rest };
+            });
+
+            setAttendanceData(attendanceData);
             const totalDays = attendanceData.length;
             const presentDays = attendanceData.filter((item) => item.present).length;
             const absentDays = totalDays - presentDays;
@@ -276,6 +296,7 @@ const Report = () => {
             setPresentCount(presentDays);
             setAbsentCount(absentDays);
             setTotalCount(totalDays);
+
             setAbsentDates(attendanceData.filter((item) => !item.present).map((item) => item.date));
           } else {
             // Reset values if no data found
@@ -365,7 +386,10 @@ const AttendanceReport = ({ type, absentDates }) => {
         <div className={classes.root}>
           <div>
             <DateRangePicker onDateChange={handleDateChange} />
+
           </div>
+
+
           <div className={classes.bodyContainer}>
             {/* Other JSX code inside the smallBox container */}
             <div className={classes.smallBox}>
@@ -384,6 +408,8 @@ const AttendanceReport = ({ type, absentDates }) => {
                   </Typography>
                 </div>
               </div>
+
+
             </div>
 
             {/* Other JSX code inside the smallBox container */}
@@ -470,9 +496,17 @@ const AttendanceReport = ({ type, absentDates }) => {
               </div>
             </div>
           </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight : '650px', marginLeft : '750px'}}>
+                      <CSVLink data={attendanceData} title="Download CSV Report" filename={`AttendanceReport_${csvstartDate}-${csvendDate}.csv`}>
+                        {attendanceData.length > 0 && (
+                          <IconButton>
+                            <img src={csvicon} alt="Download CSV Report" />
+                          </IconButton>
+                        )}
+                      </CSVLink>
+                    </div>
         </div>
       );
 
     };
-
-    export default Report;
+export default Report;
