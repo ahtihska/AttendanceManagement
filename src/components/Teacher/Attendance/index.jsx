@@ -1,33 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import ReactDom from 'react-dom';
-import { Button, Box, Grid } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import MaterialTable from 'material-table';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import { createTheme, ThemeProvider } from '@mui/material';
-import { Snackbar } from '@material-ui/core';
-import Alert from '@mui/material/Alert';
-
-
-const timeLimitInMinutes = 1;
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { Button } from '@mui/material';
+import { CalendarToday, ArrowDropDown } from '@mui/icons-material';
+import { format } from 'date-fns';
+import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import Box from '@mui/material/Box';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import { MenuItem, FormControl, Select, InputLabel, Grid } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, InputBase } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import SearchIcon from '@mui/icons-material/Search';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-//     backgroundColor: '#0F1E23',
     color: '#fff',
     padding: theme.spacing(2),
-    posotion: 'fixed',
-    width: '100%'
-  },
-
-  greetings: {
-
-    fontSize: 30,
-    fontWeight: 'medium',
-    marginBottom: theme.spacing(1),
   },
   message: {
     fontSize: 13,
@@ -38,487 +30,794 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginLeft : theme.spacing(2),
-    marginRight : theme.spacing(3),
-  },
-  mediumBox: {
-    width: 'calc(39%)',
-    height: '250px',
-    backgroundColor: '#fff',
-    marginBottom: theme.spacing(2),
-    marginLeft : theme.spacing(1),
-    borderRadius: '10px'
-  },
-  regularBox: {
-    width: 'calc(55.33% - 30px)',
-    height: '420px',
-    backgroundColor: '#fff',
-    marginBottom: theme.spacing(2),
-    marginRight: theme.spacing(1),
     marginLeft: theme.spacing(2),
-    borderRadius: '10px',
-    overflow: 'scroll',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-
+    marginRight: theme.spacing(3),
+    marginTop: theme.spacing(4),
   },
-  regBox: {
-    width: 'calc(45.33% - 30px)',
-    height: '420px',
-    backgroundColor: '#fff',
-    marginBottom: theme.spacing(2),
-    marginRight: theme.spacing(1),
-    marginLeft: theme.spacing(2),
-    borderRadius: '10px',
-    overflow: 'scroll',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  },
-  smallBox: {
-      width: 'calc(100% - 10px)',
-      height: '150px',
-      backgroundColor: '#fff',
-      marginBottom: theme.spacing(2),
-      marginLeft : theme.spacing(1),
-      borderRadius: '10px'
-    },
-
-    classItem: {
+  dateRangeContainer: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      marginTop: theme.spacing(2),
-      borderBottom: '1px solid #CFCFCF',
-      textAlign: 'left',
+      marginBottom: theme.spacing(4),
+      marginLeft: theme.spacing(4),
     },
-    className: {
-      marginRight: theme.spacing(2),
+  bigBox: {
+      width: 'calc(55%)',
+      height: '515px',
+      backgroundColor: '#fff',
+      marginBottom: theme.spacing(2),
+      marginLeft: theme.spacing(1),
+      borderRadius: '10px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
 
-      fontWeight: 600,
-      color: '#000',
-      fontSize: 20,
-      alignSelf: 'center',
-      textAlign: 'right',
     },
-
-  summaryContainer:{
-    display: 'flex',
-    alignItems: 'center',
-
-    margin: theme.spacing(6),
-    marginLeft: theme.spacing(7),
-    marginTop: theme.spacing(4),
-    marginRight: theme.spacing(175),
+  regularBox: {
+    width: 'calc(43%)',
+    height: '515px',
+    backgroundColor: '#fff',
+    marginBottom: theme.spacing(2),
+    borderRadius: '10px',
+    overflow: 'auto',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+    scrollbarColor: 'transparent transparent',
+    '&::-webkit-scrollbar': {
+      width: 6,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      borderRadius: 3,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: 'transparent',
+    },
   },
+  message: {
+      fontSize: 13,
+      color: 'black',
 
+      fontWeight: 'light',
+    },
+    bodyContainer: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginLeft: theme.spacing(2),
+      marginRight: theme.spacing(3),
+    },
+  smallBox: {
+    width: 'calc(25% - 10px)',
+    height: '150px',
+    backgroundColor: '#fff',
+    overflow: 'auto',
+    marginBottom: theme.spacing(2),
+    marginLeft: theme.spacing(1),
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    borderRadius: '10px'
+  },
+  largeBox: {
+      width: 'calc(100%)',
+      height: '100px',
+      backgroundColor: '#fff',
+      marginBottom: theme.spacing(2),
+      marginLeft: theme.spacing(1),
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+  attendanceBox: {
+        width: 'calc(100%)',
+        height: '100px',
+        backgroundColor: '#fff',
+        marginBottom: theme.spacing(2),
+        marginLeft: theme.spacing(1),
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      },
   boldContent: {
 
-      fontWeight: 'Bold',
-
-      color: 'black',
-    },
-  fadedContent:{
-
-      opacity:0.5,
-      color: 'black',
+    fontWeight: 'Bold',
+    color: 'black',
   },
-  containerStyle :{
+  fadedContent: {
+
+    fontWeight: 'Bold',
+    opacity: 0.5,
+    color: 'black',
+  },
+  tileHeadings: {
+    fontSize: 20,
+
+    fontWeight: 700,
+    position: 'absolute',
+    color: 'black',
+    padding: '20px',
+  },
+  tableContainer: {
     display: 'flex',
     flexDirection: 'column',
+    height: '330px',
+    overflow: 'auto',
+          scrollbarColor: 'transparent transparent',
+          '&::-webkit-scrollbar': {
+            width: 6,
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: 3,
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+          },
   },
-  elementStyle :{
-    marginBottom: '10px',
-
-    fontSize : 22,
-    fontWeight: 'medium',
-    margin: theme.spacing(6),
-    marginLeft: theme.spacing(7),
-    marginTop: theme.spacing(3),
+  days: {
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(5),
   },
-  butticon:{
-    marginLeft : theme.spacing(30),
-    marginRight: theme.spacing(6),
-    marginTop: theme.spacing(-8),
-    alignSelf: 'right',
-  },
-  syles:{
-    width: '100px',
-    height:'100px',
-    overflow: 'scroll'
-
-},
-  schoolitem:{
-    color: '#ff5722',
-
-  },
-  items:{
-
-        fontSize : 20,
-        color: 'black',
+ dropdown: {
+     display: 'flex',
+     flexDirection: 'column',
+     justifyContent: 'center',
+     alignItems: 'center',
+     padding: theme.spacing(2),
+     backgroundColor: 'white', // Set background color to white
+     color: 'black', // Set text color to black
+    },
+ formControl: {
+     minWidth: 150,   // Set the height of the dropdown
+     marginLeft: theme.spacing(1),
+   },
+ teacher: {
      marginTop: theme.spacing(1),
-  },
+     marginRight: theme.spacing(5),
+   },
+ selectWrapper: {
+     display: 'flex',
+     alignItems: 'center',
+     height:'27px'
+   },
+   inputLabel: {
+     marginRight: theme.spacing(1),
+   },
+   button: {
+     color: 'black',
+     backgroundColor: '#fff',
+     fontSize: 13,
 
+     height: '27px',
+    },
+
+     searchInputContainer: {
+       display: 'flex',
+       alignItems: 'center',
+       backgroundColor: '#f2f2f2', // Grey background for the search bar
+       paddingRight: theme.spacing(1),
+       borderRadius: theme.shape.borderRadius,
+       '&:hover': {
+         backgroundColor: '#e0e0e0', // Darker grey on hover
+       },
+       marginTop: 'calc(4%)',
+       marginRight: 'calc(4%)',
+
+     borderBottom: '1px solid #555', // Underline the placeholder text
+     },
+  searchContainer: {
+     display: 'flex',
+     alignItems: 'center',
+     justifyContent: 'space-between', // Align items at the ends of the container
+     marginBottom: theme.spacing(2),
+     borderRadius: theme.shape.borderRadius,
+     paddingLeft: theme.spacing(1),
+     paddingRight: theme.spacing(1),
+
+   },
+   searchInput: {
+     flex: 1,
+     fontSize: '13px', // Optional: Adjust font size
+   },
+   searchIcon: {
+     color: '#555',
+   },
 
 }));
 
-const Dashboard = () => {
+const DateRangePicker = ({ onDateChange }) => {
   const classes = useStyles();
-  const defaultMaterialTheme = createTheme();
-  const [sentClasses, setSentClasses] = useState([]);
-  const [lastSavedDates, setLastSavedDates] = useState({});
-  const [saveButtonDisabled, setSaveButtonDisabled] = useState(false);
-  const [selectedOption, setSelectedOption] = useState('');
-  const [studentsData, setStudentsData] = useState([]);
-  const [post, setPost] = useState(false);
-  const [data, setData] = useState(null);
-  const [studentid, setStudentid] = useState("");
-  const [classIds, setClassIds] = useState([]);
-  const [studentNames, setStudentNames] = useState([]);
-  const [saveButtonDisabledMap, setSaveButtonDisabledMap] = useState({});
-  const [absenteesData, setAbsenteesData] = useState([]);
-    const [attendanceSavedForSelectedDay, setAttendanceSavedForSelectedDay] = useState(false);
-    const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
-
- const handleSnackbarClose = (event, reason) => {
-      if (reason === 'clickaway') {
-        return;
-      }
-      setIsSnackbarOpen(false);
-    };
-
-    // Rest of the code...
- const handleChange = (event) => {
-    const selectedValue = event.target.value;
-    setSelectedOption(selectedValue);
-
-    // Move the if statement inside the handleChange function
-    if (lastSavedDates[selectedValue] && new Date() - lastSavedDates[selectedValue] < timeLimitInMinutes * 60 * 1000) {
-      setAttendanceSavedForSelectedDay(true);
-    } else {
-      setAttendanceSavedForSelectedDay(false);
-    }
-  };
-
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
-    // Fetch classId values from the API when the component mounts
-    const TEACHER_EMAIL = 'Dinesh.Kumar@gmail.com';
-    axios
-      .get(`http://localhost:8086/teachers/emailId/${TEACHER_EMAIL}`)
-      .then((response) => {
-        const classIdValues = response.data.map((item) => item.classId);
-        setClassIds(classIdValues);
-      })
-      .catch((error) => {
-        console.error('Error fetching classIds:', error);
-      });
+    // Set the initial date to today's date
+    setSelectedDate(new Date());
   }, []);
 
-  useEffect(() => {
-    if (selectedOption) {
-      axios
-        .get(`http://localhost:8086/students/classId/${selectedOption}`)
-        .then((response) => {
-          const initialStudents = response.data.map((student) => ({
-            id: student.id,
-            firstName: student.firstName,
-            lastName: student.lastName,
-            Status: true,
-          }));
-          setStudentsData(initialStudents);
-        })
-        .catch((error) => {
-          console.error('Error fetching student data:', error);
-        });
-    }
-  }, [selectedOption]);
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    onDateChange(date);
+  };
 
-  const handleCheckboxChange = (id) => {
-    const updatedStudentsData = studentsData.map((row) =>
-      row.id === id ? { ...row, Status: !row.Status } : row
-    );
-    setStudentsData(updatedStudentsData);
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ marginRight: '10px', marginLeft: '10px', fontSize: 18,  color: '#4150B7' }}>DATE : </span>
+        <DatePicker
+          selected={selectedDate}
+          onChange={handleDateChange}
+          dateFormat="MMM dd"
+          customInput={
+            <Button variant="outlined" size="small" className={classes.button} startIcon={<CalendarToday />}>
+              {selectedDate ? selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date'}
+              <ArrowDropDown style={{ marginLeft: '5px' }} />
+            </Button>
+          }
+        />
+      </div>
+    </div>
+  );
+};
 
-    if (!updatedStudentsData.find((row) => row.id === id).Status) {
-      const studentToAdd = updatedStudentsData.find((row) => row.id === id);
-      setAbsenteesData((prevData) => [...prevData, studentToAdd]);
-    } else {
-      setAbsenteesData((prevData) =>
-        prevData.filter((student) => student.id !== id)
-      );
+const RecordAttendanceTable = ({ stuData, handleCheckboxChange, filterData }) => {
+  const classes = useStyles();
+  const [searchQuery, setSearchQuery] = useState('');
+  const data = stuData;
+  console.log(stuData);
+  console.log(filterData)
+  // Function to handle search input change
+  const handleSearchInputChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // Filter the data based on the search query
+ const filteredData = data.filter((record) => {
+   const lowerCaseQuery = searchQuery.toLowerCase();
+   const lowerCaseName = `${record.firstName} ${record.lastName}`.toLowerCase();
+   const lowerCaseRollNo = String(record.student_id); // Convert to string to use startsWith
+
+   return (
+     lowerCaseName.startsWith(lowerCaseQuery) ||
+     lowerCaseRollNo.startsWith(lowerCaseQuery)
+   );
+ });
+
+  return (
+       <div>
+         {/* Search input field */}
+         <div className={classes.searchContainer}>
+             <h2 style={{ color: 'black', marginLeft: 'calc(5%)', marginTop: 'calc(5%)' }}>Record Attendance</h2>
+             <div className={classes.searchInputContainer}>
+               <SearchIcon className={classes.searchIcon} />
+               <InputBase
+                 placeholder="Search"
+                 className={classes.searchInput}
+                 value={searchQuery}
+                 onChange={handleSearchInputChange}
+               />
+             </div>
+           </div>
+
+
+      {/* Table */}
+      <TableContainer className={classes.tableContainer} style={{ marginBottom: '16px' }}>
+        <Table>
+          <TableHead>
+             <TableRow>
+               <TableCell align="center" style={{ width: '25%' }}>
+                 Roll No
+               </TableCell>
+               <TableCell align="left" style={{ width: '50%' }}>
+                 Student Name
+               </TableCell>
+               <TableCell align="center" style={{ width: '25%' }}>
+                 Status
+               </TableCell>
+             </TableRow>
+          </TableHead>
+          <TableBody>
+                {filteredData.map((record) => (
+                  <TableRow key={record.id}>
+                    <TableCell align="center" style={{ width: '25%' }}>
+                      {record.rollNo}
+                    </TableCell>
+                    <TableCell align="left" style={{ width: '50%' }}>
+                      {`${record.firstName} ${record.lastName}`}
+                    </TableCell>
+                    <TableCell align="center" style={{ width: '25%' }}>
+                      {!filterData.includes(Number(record.id)) ? (
+                        <Checkbox
+                          id={`checkbox-${record.id}`}
+                          checked={record.present}
+                          onChange={(e) => handleCheckboxChange(record.id, e.target.checked)}
+                        />
+                      ) : (
+                         <Typography variant="h2" className={classes.fadedContent} style={{ fontSize: 16 }}>
+                           ABSENT
+                         </Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+    </div>
+  );
+};
+
+
+
+const RecordAbsentees = ({ stuData}) => {
+  const classes = useStyles();
+   const data = stuData;
+  return (
+    <TableContainer className = {classes.tableContainer} style={{ marginBottom: '16px', }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell align="center" style={{ width: '50%' }}>Roll No</TableCell>
+            <TableCell align="center" style={{ width: '50%' }}>Name</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.map((record) => (
+            <TableRow key={record.id}>
+              <TableCell align="center" style={{ width: '50%' }}>{record.rollNo}</TableCell>
+              <TableCell align="center" style={{ width: '50%' }}>{`${record.firstName} ${record.lastName}`}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
+const AttendanceRecordedTable = ({ attendanceData,stuData, handleCheck}) => {
+  const classes = useStyles();
+  const [searchQuery, setSearchQuery] = useState('');
+  const data = [...attendanceData].sort((a, b) => a.student_id - b.student_id).map((record) => {
+      const studentId = Number(record.student_id);
+        // Find the student info using student_id
+        const studentInfo = stuData.find((student) => Number(student.id) === studentId);
+
+        if (studentInfo) {
+          // If student info is found, merge attributes
+          return {
+            ...record,
+            firstName: studentInfo.firstName,
+            lastName: studentInfo.lastName,
+            rollNo: studentInfo.rollNo,
+          };
+        }
+
+      return record;
+    });
+ console.log(data)
+  // Function to handle search input change
+  const handleSearchInputChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+ const filteredData = data.filter((record) => {
+   const lowerCaseQuery = searchQuery.toLowerCase();
+   const lowerCaseName = `${record.firstName} ${record.lastName}`.toLowerCase();
+   const lowerCaseRollNo = String(record.student_id); // Convert to string to use startsWith
+
+   return (
+     lowerCaseName.startsWith(lowerCaseQuery) ||
+     lowerCaseRollNo.startsWith(lowerCaseQuery)
+   );
+ });
+
+  return (
+       <div>
+         {/* Search input field */}
+         <div className={classes.searchContainer}>
+             <h2 style={{ color: 'black', marginLeft: 'calc(5%)', marginTop: 'calc(5%)' }}>Recorded Attendance</h2>
+             <div className={classes.searchInputContainer}>
+               <SearchIcon className={classes.searchIcon} />
+               <InputBase
+                 placeholder="Search"
+                 className={classes.searchInput}
+                 value={searchQuery}
+                 onChange={handleSearchInputChange}
+               />
+             </div>
+           </div>
+
+
+      {/* Table */}
+   <TableContainer className={classes.tableContainer} style={{ marginBottom: '16px' }}>
+     <Table>
+       <TableHead>
+          <TableRow>
+            <TableCell align="center" style={{ width: '25%' }}>
+              Roll No
+            </TableCell>
+            <TableCell align="left" style={{ width: '50%' }}>
+              Student Name
+            </TableCell>
+            <TableCell align="center" style={{ width: '25%' }}>
+              Status
+            </TableCell>
+          </TableRow>
+       </TableHead>
+       <TableBody>
+             {filteredData.map((record) => (
+               <TableRow key={record.id}>
+                 <TableCell align="center" style={{ width: '25%' }}>
+                   {record.rollNo}
+                 </TableCell>
+                 <TableCell align="left" style={{ width: '50%' }}>
+                   {`${record.firstName} ${record.lastName}`}
+                 </TableCell>
+                 <TableCell align="center" style={{ width: '25%' }}>
+                   {record.leave_id === null ? (
+                     <Checkbox
+                       id={`checkbox-${record.id}`}
+                       checked={record.present}
+                       onChange={(e) => handleCheck(record.id, e.target.checked)}
+                     />
+                   ) : (
+                     <Typography variant="h2" className={classes.fadedContent} style={{ fontSize: 16 }}>
+                         ABSENT
+                      </Typography>
+                   )}np
+                 </TableCell>
+               </TableRow>
+             ))}
+           </TableBody>
+         </Table>
+       </TableContainer>
+    </div>
+  );
+};
+
+
+
+const AbsenteesRecorded = ({ attendanceData, stuData}) => {
+  const classes = useStyles();
+  const data = [...attendanceData].sort((a, b) => a.student_id - b.student_id).map((record) => {
+        const studentId = Number(record.student_id);
+        // Find the student info using student_id
+        const studentInfo = stuData.find((student) => Number(student.id) === studentId);
+
+        if (studentInfo) {
+          return {
+            ...record,
+            firstName: studentInfo.firstName,
+            lastName: studentInfo.lastName,
+            rollNo: studentInfo.rollNo,
+          };
+        }
+
+        return record;
+      });
+  return (
+    <TableContainer className = {classes.tableContainer} style={{ marginBottom: '16px', }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell align="center" style={{ width: '50%' }}>Roll No</TableCell>
+            <TableCell align="center" style={{ width: '50%' }}>Name</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.map((record) => (
+            <TableRow key={record.id}>
+              <TableCell align="center" style={{ width: '50%' }}>{record.rollNo}</TableCell>
+              <TableCell align="center" style={{ width: '50%' }}>{`${record.firstName} ${record.lastName}`}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
+const UpdatePage = () => {
+const classes = useStyles();
+
+   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+   const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    // Function to open the Snackbar with a custom message
+    const showSnackbar = (message) => {
+      setSnackbarMessage(message);
+      setIsSnackbarOpen(true);
+    };
+
+  const handleUpdateButtonClick = async () => {
+     // Create a copy of the attendanceData array to work with
+     const updatedData = attendanceData.map((record) => {
+       const checkboxElement = document.getElementById(`checkbox-${record.id}`);
+       if (checkboxElement) {
+         const isChecked = checkboxElement.checked;
+         return { ...record, present: isChecked };
+       }
+       return record;
+     });
+
+     // Update the attendanceData state with the new data
+     setAttendanceData(updatedData);
+
+
+     try {
+       // Send a PUT request using axios
+       const response = await axios.put('http://localhost:8080/api/v1/attendance/', updatedData);
+
+       if (response.status === 200) {
+         console.log('Update successful');
+         // After the update is successful, show the snackbar
+         showSnackbar('Updated Successfully!!');
+       } else {
+         console.log('Update failed');
+         // Handle error scenario here
+       }
+       setTimeout(() => {
+               window.location.reload();
+             }, 1500);
+     } catch (error) {
+       console.error('Error updating data:', error);
+       // Handle error scenario here
+     }
+   };
+
+  const handleSaveButtonClick = async () => {
+    try {
+      // Create new records for each student in stuData
+      const newRecords = stuData.filter((student) => !filteredData.includes(Number(student.id)))
+              .map((student) => {
+                const studentId = student.id;
+                const checkboxId = `checkbox-${studentId}`;
+                const checkboxElement = document.getElementById(checkboxId);
+                const isChecked = checkboxElement ? checkboxElement.checked : false;
+                const date = formatSelectedDate(selectedDate);
+
+                const newRecord = {
+                  student_id: studentId,
+                  class_id: selectedClassId,
+                  teacher_id: student.teacherId,
+                  date: date,
+                  present: isChecked,
+                };
+                return newRecord;
+              });
+
+      // Make an API call to post the new records
+      const apiUrl = 'http://localhost:8080/api/v1/attendance/';
+      await axios.post(apiUrl, newRecords);
+
+      // After the update is successful, show the snackbar
+      showSnackbar('Saved Successfully!!');
+
+      // Refresh the page
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error) {
+      console.error('Error saving attendance:', error);
+      // Handle error and show appropriate message to the user
     }
   };
 
-  const handleAttendanceUpdate = async (newData) => {
-      try {
-        await axios.put(
-          `http://localhost:8080/api/v1/attendance/${selectedOption}/${studentid}`,
-          studentsData.filter((student) => student.id === studentid)[0]
-        );
-        setPost(true);
-      } catch (error) {
-        console.error('Error updating attendance:', error);
-      }
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [classIds, setClassIds] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const handleChange = (event) => {
+        setSelectedClassId(event.target.value);
+      };
+    const formatSelectedDate = (date) => {
+          return date ? format(date, 'yyyy-MM-dd') : ''; // Returns formatted date or an empty string if date is null
+        };
+
+      // Function to handle date change
+    const handleDateChange = (date) => {
+        setSelectedDate(date);
     };
-
-
-
+  const TEACHER_EMAIL = 'Dinesh.Kumar@gmail.com';
   useEffect(() => {
-    handleAttendanceUpdate(studentsData);
-  }, [studentsData]);
-
-   const fetchNewData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/v1/attendance/${selectedOption}`, {
-          params: {
-            Status: false,
-          },
-        });
-        setAbsenteesData(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-  const columns = [
-    { title: 'Roll No', field: 'id', editable: 'never' },
-    { title: 'Name', field: 'firstName', editable: 'never' },
-
-    {
-      title: 'Status',
-      field: 'Status',
-      type: 'boolean',
-      render: (rowData) => (
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={rowData.Status}
-              onChange={() => handleCheckboxChange(rowData.id)}
-              style ={{color: '#4150b7'}}
-            />
-          }
-          label=""
-        />
-      ),
-    },
-  ];
-
-  const Columns = [
-    { title: 'Name', field: 'firstName', editable: 'never' },
-    { title: 'Last Name', field: 'lastName', editable: 'never' },
-    {
-      title: 'Status',
-      field: 'Status',
-      render:(rowData) => rowData.Status ? "Present" : "Absent"
-    },
-  ];
-  useEffect(() => {
-      // Fetch the list of classes for which attendance is already sent
+      // Fetch classId values from the API when the component mounts
       axios
-        .get('http://localhost:8080/api/v1/attendance/')
+        .get(`http://localhost:8086/teachers/emailId/${TEACHER_EMAIL}`)
         .then((response) => {
-          const sentClassIds = response.data.map((item) => item.class_id);
-          setSentClasses(sentClassIds);
-
-          // Check the last saved date for each class
-          const lastSavedDatesMap = {};
-          sentClassIds.forEach((classId) => {
-            const lastSavedAttendanceForClass = response.data
-              .filter((item) => item.class_id === classId)
-              .pop();
-            if (lastSavedAttendanceForClass) {
-              lastSavedDatesMap[classId] = new Date(lastSavedAttendanceForClass.date);
-            } else {
-              lastSavedDatesMap[classId] = null;
-            }
-          });
-          setLastSavedDates(lastSavedDatesMap);
-
-          // Initialize the disabled state of the "Save" button for each class
-          const saveButtonDisabledMap = {};
-          sentClassIds.forEach((classId) => {
-            saveButtonDisabledMap[classId] = false;
-          });
-          setSaveButtonDisabledMap(saveButtonDisabledMap);
+          const classIdValues = response.data.map((item) => item.classId);
+          setClassIds(classIdValues);
         })
         .catch((error) => {
-          console.error('Error fetching sent classes:', error);
+          console.error('Error fetching classIds:', error);
         });
     }, []);
 
-
-  const handleSave = () => {
-      const presentStudentIds = studentsData
-        .filter((student) => student.Status)
-        .map((student) => student.id);
-
-      const absentStudentIds = studentsData
-        .filter((student) => !student.Status)
-        .map((student) => student.id);
-
-      const attendanceData = [
-        ...presentStudentIds.map((studentId) => ({
-          student_id: studentId,
-          teacher_id: 5001,
-          class_id: selectedOption,
-          delegation_id: 5001,
-          hours: 8,
-          present: true,
-          date: new Date().toISOString().slice(0, 10),
-        })),
-        ...absentStudentIds.map((studentId) => ({
-          student_id: studentId,
-          teacher_id: 5001,
-          class_id: selectedOption,
-          delegation_id: 5001,
-          hours: 0, // You can adjust this value as needed for absent students
-          present: false,
-          date: new Date().toISOString().slice(0, 10),
-        })),
-      ];
-
-      axios
-        .post('http://localhost:8080/api/v1/attendance/', attendanceData)
-        .then((response) => {
-          console.log('Attendance saved:', response.data);
-          setIsSnackbarOpen(true);
-
-
-          setSentClasses((prevSentClasses) => [...prevSentClasses, selectedOption]);
-
-          setLastSavedDates((prevDates) => ({
-            ...prevDates,
-            [selectedOption]: new Date(),
-          }));
-
-          setSaveButtonDisabled(true);
-          setTimeout(() => {
-            setSaveButtonDisabled(false);
-          }, timeLimitInMinutes * 60 * 1000);
-
-          // After saving, fetch the updated data from the server
-          fetchNewData();
-        })
-        .catch((error) => {
-          console.error('Error saving attendance:', error);
-        });
-
-      setAttendanceSavedForSelectedDay(true);
-    };
-
-
-
-
-  useEffect(() => {
-    // Fetch the list of classes for which attendance is already sent
-    axios
-      .get('http://localhost:8080/api/v1/attendance/')
-      .then((response) => {
-        const sentClassIds = response.data.map((item) => item.class_id);
-        setSentClasses(sentClassIds);
-
-        // Check the last saved date for each class
-        const lastSavedDatesMap = {};
-        sentClassIds.forEach((classId) => {
-          const lastSavedAttendanceForClass = response.data
-            .filter((item) => item.class_id === classId)
-            .pop();
-          if (lastSavedAttendanceForClass) {
-            lastSavedDatesMap[classId] = new Date(lastSavedAttendanceForClass.date);
-          } else {
-            lastSavedDatesMap[classId] = null;
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+      useEffect(() => {
+          async function fetchAttendanceData() {
+            try {
+              const response = await axios.get(`http://localhost:8080/api/v1/attendance/update?classId=${selectedClassId}&date=${formatSelectedDate(selectedDate)}`);
+              const adata = response.data;
+              const initialStudents = [...adata].sort((a, b) => a.id - b.id);
+              const StudentIds = adata.map((student) =>Number(student.student_id));
+              setFilteredData(StudentIds);
+              setAttendanceData(initialStudents);
+            } catch (error) {
+              console.error('Error fetching attendance data:', error);
+            }
           }
-        });
-        setLastSavedDates(lastSavedDatesMap);
 
-        // Initialize the disabled state of the "Save" button for each class
-        const saveButtonDisabledMap = {};
-        sentClassIds.forEach((classId) => {
-          saveButtonDisabledMap[classId] = false;
-        });
-        setSaveButtonDisabledMap(saveButtonDisabledMap);
+          if (selectedClassId && formatSelectedDate(selectedDate)) {
+            fetchAttendanceData();
+          }
+        }, [selectedClassId, selectedDate]);
 
-        // Fetch initial attendance data
-        if (selectedOption) {
-          fetchNewData();
-        }
-      })
-      .catch((error) => {
-        console.error('Error fetching sent classes:', error);
-      });
-  }, [selectedOption]);
+  const [stuData, setStuData] = useState([]);
 
-   return (
-     <div className={classes.root}>
-       <div className={classes.bodyContainer}>
-         <div className={classes.smallBox}>
-           <div className={classes.summaryContainer}>
-             <FormControl fullWidth>
-             <InputLabel style ={{ width: 150}}id="dropdown-label">Class</InputLabel>
-             <Select value={selectedOption} onChange={handleChange}>
-               {classIds.map((classId) => (
-                 <MenuItem key={classId} value={classId}>
-                   {classId}
-                 </MenuItem>
+        useEffect(() => {
+          async function fetchStudentData() {
+            try {
+              const response = await axios.get(`http://localhost:8086/students/classId/${selectedClassId}`);
+              const sdata = response.data;
+              const initialStudents = [...sdata].sort((a, b) => a.id - b.id).map((student, index) => ({
+                ...student,
+                rollNo: index + 1,
+                student_id: student.id,
+                present: filteredData.includes(Number(student.id)) ? false : true,
+              }));
 
-               ))}
-             </Select>
-             </FormControl>
+              setStuData(initialStudents);
+            } catch (error) {
+              console.error('Error fetching student data:', error);
+            }
+          }
+
+          if (selectedClassId) {
+            fetchStudentData();
+          }
+        }, [selectedClassId, filteredData]);
+
+
+// This code is to handle todays date attendance absentees(saved)
+     const [absentees, setAbsentees] = useState(
+          stuData.filter((record) => !record.present)
+        );
+
+       const handleCheckboxChange = (id, isChecked) => {
+           setStuData(prevData =>
+             prevData.map(record =>
+               record.id === id ? { ...record, present: isChecked } : record
+             )
+           );
+
+       };
+        useEffect(() => {
+          async function updateAbsentees() {
+            try {
+              const newAbsentees = await stuData.filter((record) => !record.present);
+              setAbsentees(newAbsentees);
+            } catch (error) {
+              console.error('Error updating absentees:', error);
+            }
+          }
+
+          updateAbsentees();
+        }, [stuData]);
+
+
+        // This code is to handle absentees of update page
+           const [absenteesData, setAbsenteesData] = useState(
+             attendanceData.filter((record) => !record.present)
+           );
+
+           const handleCheck = (id, isChecked) => {
+              setAttendanceData(prevData =>
+                 prevData.map(record =>
+                   record.id === id ? { ...record, present: isChecked } : record
+                 )
+               );
+           };
+
+          useEffect(() => {
+            async function updateAbsenteesData() {
+              try {
+                const newAbsenteesData = await attendanceData.filter((record) => !record.present);
+                setAbsenteesData(newAbsenteesData);
+              } catch (error) {
+                console.error('Error updating absentees data:', error);
+              }
+            }
+
+            updateAbsenteesData();
+          }, [attendanceData]);
+
+     return (
+         <div className={classes.root}>
+           <div className={classes.largeBox}>
+             {/* Left side - DateRangePicker */}
+             <DateRangePicker onDateChange={handleDateChange} />
+             <div className={classes.selectWrapper} style={{ marginRight: '20px' }}>
+               <InputLabel className={classes.inputLabel} htmlFor="class-dropdown">
+                 <span style={{ marginRight: '10px', marginLeft: '10px', fontSize: 18,  color: '#4150B7' }}>
+                   CLASS :
+                 </span>
+               </InputLabel>
+               <FormControl className={classes.formControl}>
+                 <Select
+                   value={selectedClassId}
+                   onChange={handleChange}
+                   inputProps={{ name: 'class', id: 'class-dropdown' }}
+                   displayEmpty // Set displayEmpty prop to show placeholder text
+                 >
+                   <MenuItem value="">
+                     <em>Select</em> {/* Placeholder text */}
+                   </MenuItem>
+                   {classIds.map((classId) => (
+                     <MenuItem key={classId} value={classId}>
+
+                       {classId}
+                     </MenuItem>
+                   ))}
+                 </Select>
+               </FormControl>
+             </div>
            </div>
-         </div>
+           {console.log("fil ", filteredData)}
+           {console.log("stu ", stuData)}
+           {filteredData.length !== stuData.length ? (
+           <>
+             <div className={classes.bodyContainer}>
+               <div className={classes.bigBox}>
+                 <div>
+                   <RecordAttendanceTable stuData={stuData} handleCheckboxChange={handleCheckboxChange} filterData = {filteredData} />
+                 </div>
 
-         <div className={classes.regularBox}>
-           <div style={{ width: '100%', height: '100%' }}>
-             <ThemeProvider theme={defaultMaterialTheme}>
-               <MaterialTable title="Attendance Record" columns={columns} data={studentsData} />
-               <Snackbar
-                 open={isSnackbarOpen}
-                 autoHideDuration={6000}
-                 onClose={handleSnackbarClose}
-                 anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-               >
-                 <Alert onClose={handleSnackbarClose} severity="success" elevation={6} variant="filled" sx={{ backgroundColor: '#4caf50' }}>
-                   Attendance Saved Successfully
-                 </Alert>
+                 <div style={{ textAlign: 'right', padding: '16px', marginRight: 'calc(4%)' }}>
+                   <Button variant="contained" color="primary" onClick={handleSaveButtonClick} disabled={selectedClassId === ''}>
+                     Save
+                   </Button>
+                 </div>
+               </div>
+
+                <div className={classes.regularBox}>
+                  <div>
+                    <h2 style={{ color: 'black', marginLeft: 'calc(6.5%)', marginTop: 'calc(6.5%)', marginBottom: 'calc(5.4%)' }}>Absentees List</h2>
+                      <RecordAbsentees stuData={absentees}/>
+                  </div>
+                </div>
+              </div>
+             </>
+             ) : (
+               // Show this content when filteredData is not empty
+               <>
+               <div className={classes.bodyContainer}>
+                   <div className={classes.bigBox}>
+                     <div>
+                       <AttendanceRecordedTable
+                         attendanceData={attendanceData}
+                         stuData={stuData}
+                         handleCheck={handleCheck}
+                       />
+                     </div>
+
+                     <div style={{ textAlign: 'right', padding: '16px', marginRight: 'calc(4%)' }}>
+                       <Button variant="contained" color="primary" onClick={handleUpdateButtonClick} disabled={formatSelectedDate(selectedDate) === '' || selectedClassId === ''}>
+                         Update
+                       </Button>
+                     </div>
+                    </div>
+                   <div className={classes.regularBox}>
+                     <div>
+                       <h2 style={{ color: 'black', marginLeft: 'calc(6.5%)', marginTop: 'calc(6.5%)', marginBottom: 'calc(5.4%)' }}>Absentees List</h2>
+                         <AbsenteesRecorded attendanceData={absenteesData} stuData = {stuData}/>
+                     </div>
+                   </div>
+                   </div>
+                  </>
+             )}
+             <Snackbar open={isSnackbarOpen} autoHideDuration={3000} onClose={() => setIsSnackbarOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}>
+                 <MuiAlert onClose={() => setIsSnackbarOpen(false)} severity="success" elevation={6} variant="filled">
+                   {snackbarMessage}
+                 </MuiAlert>
                </Snackbar>
-             </ThemeProvider>
-
-           </div>
-         </div>
-
-         <div className={classes.regBox}>
-           <ThemeProvider theme={defaultMaterialTheme}>
-             <MaterialTable
-               title="Absentees List"
-               columns={Columns}
-               data={absenteesData}
-             />
-           </ThemeProvider>
 
          </div>
-         <Grid container justifyContent= "center">
-                    <Button
-                                     variant="contained"
-                                     color="primary"
-                                     onClick={handleSave}
-                                     disabled={
-                                       saveButtonDisabled ||
-                                       sentClasses.includes(selectedOption) ||
-                                       attendanceSavedForSelectedDay // Disable the button if attendance has been saved for the selected day
-                                     }
-                                     style={{
-                                       backgroundColor:
-                                         saveButtonDisabled ||
-                                         sentClasses.includes(selectedOption) ||
-                                         attendanceSavedForSelectedDay // Add this condition for the button color
-                                           ? 'grey'
-                                           : '',
-                                     }}
-                                   >
-                                     Save
-                                   </Button>
-                                   </Grid>
-       </div>
-     </div>
-   );
- };
+       );
+     };
 
- export default Dashboard;
+
+export default UpdatePage;
