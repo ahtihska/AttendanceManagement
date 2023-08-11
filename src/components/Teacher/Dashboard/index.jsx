@@ -85,7 +85,7 @@ const useStyles = makeStyles((theme) => ({
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   today: {
-    backgroundColor: '#000',
+    backgroundColor: '#6E88C9',
     color: '#fff',
   },
   classItem: {
