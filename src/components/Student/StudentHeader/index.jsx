@@ -150,11 +150,11 @@ const StudentHeader = () => {
 
 
     useEffect(() => {
-      axios.get('http://localhost:8086/students/id/1')
+      axios.get('http://localhost:8080/students/id/1')
         .then((response) => {
-          const { firstName, lastName } = response.data;
-          setFirstName(firstName);
-          setLastName(lastName);
+          const { first_name, last_name } = response.data;
+          setFirstName(first_name);
+          setLastName(last_name);
         })
         .catch((error) => {
           // Handle error, e.g., display a message or take appropriate action

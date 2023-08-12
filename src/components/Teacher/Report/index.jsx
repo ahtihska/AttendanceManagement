@@ -1,8 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import AttendanceReport from "./AttendanceReport.jsx";
-
-
 import DateRangePickerFunc from "./DateRangePickerFunc.jsx";
 import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -15,6 +13,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { CSVLink, CSVDownload } from "react-csv";
 import { Button,Grid } from '@mui/material';
+import { BACKEND_URL, TEACHER_EMAIL } from '../config';
 
 
 
@@ -133,7 +132,22 @@ const Report = () => {
             console.log('Selected option:', event.target.value);
   };
 
-  const classOptions = [{ class_id: 'X A' }, { class_id: 'X C' }, { class_id: 'X D' }];
+  const [classOptions, setClassOptions] = useState([]);
+
+    // Fetch class data based on teacher's email
+    useEffect(() => {
+      axios
+        .get(`${BACKEND_URL}/teachers/emailId/${TEACHER_EMAIL}`)
+        .then((response) => {
+          if (response.data) {
+            setClassOptions(response.data.map((item) => ({ class_id: item.class_id })));
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching class data:', error);
+        });
+    }, []);
+
   const fetchData = (startDate, endDate, section) => {
     if (section && startDate && endDate) {
       axios

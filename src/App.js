@@ -63,15 +63,7 @@ function App() {
             </>
           }
         />
-        <Route
-          path="/Update"
-          element={
-            <>
-              <TeacherHeader />
-              <UpdatePage />
-              <Footer />
-            </>
-          }
+
         />
         <Route
           path="/StudentDashboard"

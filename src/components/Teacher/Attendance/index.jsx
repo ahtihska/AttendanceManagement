@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import SearchIcon from '@mui/icons-material/Search';
-
+import { BACKEND_URL, TEACHER_EMAIL } from '../config';
 const useStyles = makeStyles((theme) => ({
   root: {
     color: '#fff',
@@ -268,7 +268,7 @@ const RecordAttendanceTable = ({ stuData, handleCheckboxChange, filterData }) =>
   // Filter the data based on the search query
  const filteredData = data.filter((record) => {
    const lowerCaseQuery = searchQuery.toLowerCase();
-   const lowerCaseName = `${record.firstName} ${record.lastName}`.toLowerCase();
+   const lowerCaseName = `${record.first_name} ${record.last_name}`.toLowerCase();
    const lowerCaseRollNo = String(record.student_id); // Convert to string to use startsWith
 
    return (
@@ -317,7 +317,7 @@ const RecordAttendanceTable = ({ stuData, handleCheckboxChange, filterData }) =>
                       {record.rollNo}
                     </TableCell>
                     <TableCell align="left" style={{ width: '50%' }}>
-                      {`${record.firstName} ${record.lastName}`}
+                      {`${record.first_name} ${record.last_name}`}
                     </TableCell>
                     <TableCell align="center" style={{ width: '25%' }}>
                       {!filterData.includes(Number(record.id)) ? (
@@ -359,7 +359,7 @@ const RecordAbsentees = ({ stuData}) => {
           {data.map((record) => (
             <TableRow key={record.id}>
               <TableCell align="center" style={{ width: '50%' }}>{record.rollNo}</TableCell>
-              <TableCell align="center" style={{ width: '50%' }}>{`${record.firstName} ${record.lastName}`}</TableCell>
+              <TableCell align="center" style={{ width: '50%' }}>{`${record.first_name} ${record.last_name}`}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -380,8 +380,8 @@ const AttendanceRecordedTable = ({ attendanceData,stuData, handleCheck}) => {
           // If student info is found, merge attributes
           return {
             ...record,
-            firstName: studentInfo.firstName,
-            lastName: studentInfo.lastName,
+            first_name: studentInfo.first_name,
+            last_name: studentInfo.last_name,
             rollNo: studentInfo.rollNo,
           };
         }
@@ -396,7 +396,7 @@ const AttendanceRecordedTable = ({ attendanceData,stuData, handleCheck}) => {
 
  const filteredData = data.filter((record) => {
    const lowerCaseQuery = searchQuery.toLowerCase();
-   const lowerCaseName = `${record.firstName} ${record.lastName}`.toLowerCase();
+   const lowerCaseName = `${record.first_name} ${record.last_name}`.toLowerCase();
    const lowerCaseRollNo = String(record.student_id); // Convert to string to use startsWith
 
    return (
@@ -445,7 +445,7 @@ const AttendanceRecordedTable = ({ attendanceData,stuData, handleCheck}) => {
                    {record.rollNo}
                  </TableCell>
                  <TableCell align="left" style={{ width: '50%' }}>
-                   {`${record.firstName} ${record.lastName}`}
+                   {`${record.first_name} ${record.last_name}`}
                  </TableCell>
                  <TableCell align="center" style={{ width: '25%' }}>
                    {record.leave_id === null ? (
@@ -458,7 +458,7 @@ const AttendanceRecordedTable = ({ attendanceData,stuData, handleCheck}) => {
                      <Typography variant="h2" className={classes.fadedContent} style={{ fontSize: 16 }}>
                          ABSENT
                       </Typography>
-                   )}np
+                   )}
                  </TableCell>
                </TableRow>
              ))}
@@ -481,8 +481,8 @@ const AbsenteesRecorded = ({ attendanceData, stuData}) => {
         if (studentInfo) {
           return {
             ...record,
-            firstName: studentInfo.firstName,
-            lastName: studentInfo.lastName,
+            first_name: studentInfo.first_name,
+            last_name: studentInfo.last_name,
             rollNo: studentInfo.rollNo,
           };
         }
@@ -502,7 +502,7 @@ const AbsenteesRecorded = ({ attendanceData, stuData}) => {
           {data.map((record) => (
             <TableRow key={record.id}>
               <TableCell align="center" style={{ width: '50%' }}>{record.rollNo}</TableCell>
-              <TableCell align="center" style={{ width: '50%' }}>{`${record.firstName} ${record.lastName}`}</TableCell>
+              <TableCell align="center" style={{ width: '50%' }}>{`${record.first_name} ${record.last_name}`}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -536,6 +536,7 @@ const classes = useStyles();
 
      // Update the attendanceData state with the new data
      setAttendanceData(updatedData);
+     console.log(updatedData);
 
 
      try {
@@ -611,13 +612,13 @@ const classes = useStyles();
     const handleDateChange = (date) => {
         setSelectedDate(date);
     };
-  const TEACHER_EMAIL = 'Dinesh.Kumar@gmail.com';
+
   useEffect(() => {
       // Fetch classId values from the API when the component mounts
       axios
-        .get(`http://localhost:8086/teachers/emailId/${TEACHER_EMAIL}`)
+        .get(`${BACKEND_URL}/teachers/emailId/${TEACHER_EMAIL}`)
         .then((response) => {
-          const classIdValues = response.data.map((item) => item.classId);
+          const classIdValues = response.data.map((item) => item.class_id);
           setClassIds(classIdValues);
         })
         .catch((error) => {
@@ -651,7 +652,7 @@ const classes = useStyles();
         useEffect(() => {
           async function fetchStudentData() {
             try {
-              const response = await axios.get(`http://localhost:8086/students/classId/${selectedClassId}`);
+              const response = await axios.get(`http://localhost:8080/students/classId/${selectedClassId}`);
               const sdata = response.data;
               const initialStudents = [...sdata].sort((a, b) => a.id - b.id).map((student, index) => ({
                 ...student,

@@ -158,7 +158,7 @@ const classes = useStyles();
 
        useEffect(() => {
          // Fetch teacher data from the backend
-         axios.get('http://localhost:8086/teachers/id/5001')
+         axios .get(`${BACKEND_URL}/students/emailId/${TEACHER_EMAIL}`)
            .then(response => {
              setTeacherData(response.data);
            })
@@ -177,8 +177,8 @@ const classes = useStyles();
                      setData(jsonData);
 
                      if (jsonData && jsonData.length > 0) {
-                       setFirstName(jsonData[0].firstName);
-                       setLastName(jsonData[0].lastName);
+                       setFirstName(jsonData[0].first_name);
+                       setLastName(jsonData[0].last_name);
                      }
                    } catch (error) {
                      console.error('error fetching data:', error);
@@ -203,9 +203,6 @@ const classes = useStyles();
             </Button>
             <Button component={Link} to="/Attendance" className={classes.navButton}>
               Attendance
-            </Button>
-            <Button component={Link} to="/Update" className={classes.navButton}>
-              Update
             </Button>
             <Button component={Link} to="/TeacherReport" className={classes.navButton}>
               Report

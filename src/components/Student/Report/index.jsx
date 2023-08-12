@@ -25,7 +25,7 @@ import absent from '../../../images/absent.png';
 import present from '../../../images/present.png';
 import { CSVLink, CSVDownload } from "react-csv";
 import csvicon from "../../../images/csvdownloader.png";
-
+import { BACKEND_URL, STUDENT_EMAIL } from '../config';
 import IconButton from '@material-ui/core/IconButton';
 
 
@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
   },
   message: {
     fontSize: 13,
-    fontFamily: 'Poppins',
+
     fontWeight: 'light',
   },
   bodyContainer: {
@@ -124,12 +124,11 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
   },
   boldContent: {
-    fontFamily: 'Poppins',
+
     fontWeight: 'Bold',
     color: 'black',
   },
   fadedContent: {
-    fontFamily: 'Poppins',
     opacity: 0.5,
     color: 'black',
   },
@@ -142,7 +141,7 @@ const useStyles = makeStyles((theme) => ({
   },
   tileHeadings: {
     fontSize: 20,
-    fontFamily: 'Poppins',
+
     fontWeight: 700,
     position: 'absolute',
     color: 'black',
@@ -152,7 +151,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'left',
-    fontFamily: 'Poppins',
+
     fontSize: 11,
     color: 'black',
     overflow: 'hidden',
@@ -182,14 +181,14 @@ const DateRangePicker = ({ onDateChange }) => {
     color: 'black',
     backgroundColor: '#fff',
     fontSize: 13,
-    fontFamily: 'Poppins',
+
     height: '27px',
   };
 
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <span style={{ marginRight: '10px', marginLeft: '10px', fontSize: 18, fontFamily: 'Poppins', color: '#4150B7' }}>DATE : </span>
+        <span style={{ marginRight: '10px', marginLeft: '10px', fontSize: 18,  color: '#4150B7' }}>DATE : </span>
         <DatePicker
           selected={startDate}
           onChange={handleStartDateChange}
@@ -234,6 +233,8 @@ const Report = () => {
   const [csvstartDate, setCSVStartDate] = useState('');
   const [csvendDate, setCsvEndDate] = useState('');
   const [isInitialRender, setIsInitialRender] = useState(true); // Track initial render
+  const [studentId, setStudentId] = useState(null);
+
 
   useEffect(() => {
     // Set default values to zero after the initial render
@@ -250,16 +251,20 @@ const Report = () => {
   useEffect(() => {
     // Fetch student data
     axios
-      .get('http://localhost:8086/students/id/1')
+      .get(`${BACKEND_URL}/students/emailId/${STUDENT_EMAIL}`)
       .then((response) => {
-        // Same code as before to set studentName, classID, and teacherName
+        if (response.data) {
+          setStudentId(response.data.id); // Store the student's id
+          setStudentName(response.data.name);
+          setTeacherName(response.data.teacher);
+          setClassID(response.data.classID);
+        }
       })
       .catch((error) => {
         console.error('Error fetching student data:', error);
         setStudentName('Error fetching data');
       });
   }, []);
-
 
   useEffect(() => {
     if (!isInitialRender && startDate && endDate) {
@@ -270,7 +275,7 @@ const Report = () => {
       setCsvEndDate(formattedEndDate.toString());// Add one day to endDate
 
       axios
-        .get(`http://localhost:8080/api/v1/attendance/students?studentId=1&startdate=${formattedStartDate}&enddate=${formattedEndDate}`)
+        .get(`http://localhost:8080/api/v1/attendance/students?studentId=${studentId}&startdate=${formattedStartDate}&enddate=${formattedEndDate}`)
         .then((response) => {
           if (response.data !== null) {
             const attendanceData = response.data.map((item) => {

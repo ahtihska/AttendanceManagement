@@ -3,7 +3,7 @@ import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
-
+import { BACKEND_URL, STUDENT_EMAIL } from '../config';
 import { Grid, Button } from '@material-ui/core';
 import percentagePic from "../../../images/percentagePic.jpeg";
 import { PieChart } from '@mui/x-charts/PieChart';
@@ -160,7 +160,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
   },
     today: {
-      backgroundColor: '#000',
+      backgroundColor: '#6E88C9',
       color: '#fff',
     },
   clearButton: {
@@ -204,26 +204,32 @@ const [studentName, setStudentName] = useState('');
 const [teacherName, setTeacherName] = useState('');
 const [classID, setClassID] = useState('');
 const [attendanceData, setAttendanceData] = useState([]);
-
+const [studentId, setStudentId] = useState([]);
 useEffect(() => {
   // Fetch student data
   axios
-    .get('http://localhost:8086/students/id/1')
+    .get(`${BACKEND_URL}/students/emailId/${STUDENT_EMAIL}`)
     .then((response) => {
       if (response.data) {
-        setStudentName(response.data.firstName);
-        setClassID(response.data.classId);
+        setStudentName(response.data.first_name);
+        setClassID(response.data.class_id);
 
-        const teacherId = response.data.teacherId;
+        const teacherId = response.data.teacher_id;
+        const studentId = response.data.id;
+
+        // Convert studentId to integer
+        const parsedStudentId = parseInt(studentId, 10);
+        setStudentId(parsedStudentId);
+        console.log('Fetched student ID:', studentId);
 
         // Fetch teacher data using teacherId from student data
         axios
-          .get(`http://localhost:8086/teachers/id/${teacherId}`)
+          .get(`${BACKEND_URL}/teachers/id/${teacherId}`)
           .then((teacherResponse) => {
             if (teacherResponse.data && teacherResponse.data.length > 0) {
-              const teacherData = teacherResponse.data[0]; // Select the first teacher from the response array
-              const { firstName, lastName } = teacherData;
-              setTeacherName(`${firstName} ${lastName}`);
+              const teacherData = teacherResponse.data[0];
+              const { first_name, last_name } = teacherData;
+              setTeacherName(`${first_name} ${last_name}`);
             } else {
               setTeacherName('No Teacher Found');
             }
@@ -231,6 +237,21 @@ useEffect(() => {
           .catch((error) => {
             console.error('Error fetching teacher data:', error);
             setTeacherName('Error fetching data');
+          });
+
+        // Fetch attendance data using the parsedStudentId
+        axios
+          .get(`${BACKEND_URL}/api/v1/attendance/students?studentId=${parsedStudentId}&startdate=2023-08-01&enddate=${formattedEndDate}`)
+          .then((response) => {
+            if (response.data) {
+              setAttendanceData(response.data);
+            } else {
+              setAttendanceData([]);
+            }
+          })
+          .catch((error) => {
+            console.error('Error fetching attendance data:', error);
+            setAttendanceData([]);
           });
       } else {
         setStudentName('No Student Found');
@@ -240,25 +261,7 @@ useEffect(() => {
       console.error('Error fetching student data:', error);
       setStudentName('Error fetching data');
     });
-
-  // Now fetch the attendance percentage using the API
-  axios
-        .get(`http://localhost:8080/api/v1/attendance/students?studentId=1&startdate=2023-07-01&enddate=${formattedEndDate}`)
-        .then((response) => {
-          if (response.data) {
-            setAttendanceData(response.data);
-          } else {
-            // Handle case when attendance data is not available
-            setAttendanceData([]);
-          }
-        })
-        .catch((error) => {
-          console.error('Error fetching attendance data:', error);
-          // Handle error case
-          setAttendanceData([]);
-        });
-
-}, []);
+}, [STUDENT_EMAIL, formattedEndDate]);
 
   // Calculate presentCount, absentCount, totalCount, and attendancePercentage
    const presentCount = attendanceData.filter((item) => item.present).length;

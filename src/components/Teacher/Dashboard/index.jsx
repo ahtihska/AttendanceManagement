@@ -306,8 +306,8 @@ const filteredNotificationsData = notificationsData.filter(
 );
 
 
-const [firstName, setFirstName] = useState("");
-const [lastName, setLastName] = useState("");
+const [first_name, setFirstName] = useState("");
+const [last_name, setLastName] = useState("");
 const [data, setData] = useState([]); // Add this line to define the 'data' state variable
 
 useEffect(() => {
@@ -319,8 +319,8 @@ useEffect(() => {
 
 
       if (jsonData && jsonData.length > 0) {
-        setFirstName(jsonData[0].firstName);
-        setLastName(jsonData[0].lastName);
+        setFirstName(jsonData[0].first_name);
+        setLastName(jsonData[0].last_name);
       }
     } catch (error) {
       console.error('error fetching data:', error);
@@ -332,7 +332,7 @@ useEffect(() => {
 
 
 
-  // Define a state to store the total number of students for each class
+//   Define a state to store the total number of students for each class
   const [classStudentCounts, setClassStudentCounts] = useState({});
 
   useEffect(() => {
@@ -341,7 +341,7 @@ useEffect(() => {
       try {
         const response = await Promise.all(
           data.map(async (item) => {
-            const classId = item.classId;
+            const classId = item.class_id;
             const response = await fetch(`${BACKEND_URL}/students/classId/${classId}/studentCount`);
             const jsonData = await response.json();
             return { classId, studentCount: jsonData };
@@ -375,7 +375,7 @@ useEffect(() => {
           <div>
             {/* Use the dynamic firstName and lastName here */}
             <Typography variant="h4" className={classes.greetings} style={{ fontWeight: 500, fontSize: 30 }}>
-              Hey {firstName}!
+              Hey {first_name}!
             </Typography>
             <Typography variant="body1" className={classes.message} style={{ fontWeight: 300, fontSize: 15 }}>
               We hope you have a nice day.
@@ -429,8 +429,8 @@ useEffect(() => {
       {/* Increase the marginLeft value to move the presentation icon towards the right */}
       <img src={presentation} alt="Item Image" style={{ width: '50px', height: '50px', marginRight: '10px', marginLeft: '70px' }} />
       <div>
-        <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>{item.classId}</p>
-        <p>Total Students: {classStudentCounts[item.classId] || 0}</p>
+        <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>{item.class_id}</p>
+        <p>Total Students: {classStudentCounts[item.class_id] || 0}</p>
       </div>
     </div>
 
